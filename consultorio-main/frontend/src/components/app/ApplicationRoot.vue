@@ -99,7 +99,8 @@ watch(
         '/pagos': 'Gestionar Pagos',
         '/inventario': 'Gestión de Inventario',
         '/administrar-paciente': 'Administrar Pacientes',
-        '/reportes': 'Editor de Documentos '
+        '/reportes': 'Editor de Documentos ',
+        '/pruebas-alergias': 'Pruebas de Alergias'
       };
       pageTitle.value = titles[newPath] || 'Dashboard';
 

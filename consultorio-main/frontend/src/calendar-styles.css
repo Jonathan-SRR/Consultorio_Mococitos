@@ -10,6 +10,7 @@
     --fc-button-bg-color: var(--primary-color);
     --fc-button-active-bg-color: var(--secondary-color);
     --fc-button-hover-bg-color: #38a8d6;
+    color-scheme: light;
 }
 
 /* ===================== FOOTER (Nuevo) ===================== */

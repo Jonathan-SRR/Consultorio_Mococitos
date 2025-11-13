@@ -37,7 +37,12 @@ let index = createRouter({
                 { path: "/pacientes", name: "Pacientes", component: () => import("@/views/general/MenuPacientes.vue") },
                 { path: "/pagos", name: "Pagos", component: () => import("@/views/general/GestionPagos.vue") },
                 { path: "/administrar-paciente", name: "AdministrarPaciente", component: () => import("@/views/general/AdministrarPaciente.vue") },
-                { path: "/reportes", name: "GestionReportes", component: () => import("@/views/general/GestionReportes.vue") }
+                { path: "/reportes", name: "GestionReportes", component: () => import("@/views/general/GestionReportes.vue") },
+                {
+                    path: "/pruebas-alergias",
+                    name: "PruebasAlergias",
+                    component: () => import("@/views/general/PruebasAlergias.vue")
+                }
             ]
         }
     ],
@@ -50,7 +55,7 @@ index.beforeEach(async (to, _from, next) => {
     if (to.meta.guest) {
         next();
     } else {
-        await securityStore().verifyJwt();
+        //await securityStore().verifyJwt();
         next();
     }
 });

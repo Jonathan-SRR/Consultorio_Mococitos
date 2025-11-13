@@ -125,7 +125,7 @@ import { ref } from 'vue';
 // Estado
 const products = ref([
   {
-    id: "001",
+    id: "",
     nombre: "Gato",
     fechaCaducidad: "2025-12-31",
     categoria: "C001",
