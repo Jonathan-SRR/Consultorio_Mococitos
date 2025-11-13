@@ -61,5 +61,203 @@
             VALUES ('admin.admin','$2a$10$3E6ceRVhsF8puM7doULoVuRJPeDHQjUaWSA16pHcdD0CKTTpickhm','prueba@gmail.com','Admin','Paterno','Materno');
         </sql>
     </changeSet>
+       
+    <changeSet id="2025-10-30_10:00" author="zatdiel">
+        <sql>
+            CREATE TABLE Pacientes (
+                idPaciente INT AUTO_INCREMENT NOT NULL,
+                Nombre VARCHAR(255) NOT NULL,
+                Apellido_Paterno VARCHAR(255),
+                Apellido_Materno VARCHAR(255),
+                Fecha_Nacimiento DATE,
+                Sexo VARCHAR(255),
+                Estatus BOOLEAN,
+                CONSTRAINT Pacientes_pk PRIMARY KEY (idPaciente)
+            );
+        </sql>
+    </changeSet>
 
+    <changeSet id="2025-10-31_11:30" author="carlos alberto">
+        <sql>
+            CREATE TABLE Tutor (
+                idTutor INT AUTO_INCREMENT NOT NULL,
+                Nombre VARCHAR(255) NOT NULL,
+                Apellido_Paterno VARCHAR(255),
+                Apellido_Materno VARCHAR(255),
+                Correo VARCHAR(255),
+                telefono INT,
+                idPaciente INT NOT NULL,
+                Estatus BOOLEAN,
+                CONSTRAINT Tutor_pk PRIMARY KEY (idTutor),
+                CONSTRAINT Tutor_Pacientes_fk FOREIGN KEY (idPaciente) REFERENCES Pacientes(idPaciente)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-01_09:15" author="raul">
+        <sql>
+            CREATE TABLE Direccion (
+                idDireccion INT AUTO_INCREMENT NOT NULL,
+                Calle VARCHAR(255),
+                Numero_ext INT,
+                Colonia VARCHAR(255),
+                Estado VARCHAR(255),
+                Codigo_Postal INT,
+                idTutor INT NOT NULL,
+                Estatus BOOLEAN,
+                CONSTRAINT Direccion_pk PRIMARY KEY (idDireccion),
+                CONSTRAINT Direccion_Tutor_fk FOREIGN KEY (idTutor) REFERENCES Tutor(idTutor)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-02_14:00" author="zatdiel">
+        <sql>
+            CREATE TABLE Catalogo_Alergenos (
+                idAlergeno INT AUTO_INCREMENT NOT NULL,
+                NombreAlergeno VARCHAR(255),
+                CONSTRAINT Catalogo_Alergenos_pk PRIMARY KEY (idAlergeno)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-03_10:45" author="carlos alberto">
+        <sql>
+            CREATE TABLE Antigenos_Catalogo (
+                id_Antigeno INT AUTO_INCREMENT NOT NULL,
+                Nombre_Antigeno VARCHAR(255),
+                caja INT,
+                Precio FLOAT,
+                cantidad INT,
+                CONSTRAINT Antigenos_Catalogo_pk PRIMARY KEY (id_Antigeno)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-03_16:20" author="raul">
+        <sql>
+            CREATE TABLE Frecuencia_Alimentos (
+                id_Alimentos INT AUTO_INCREMENT NOT NULL,
+                Alimentos VARCHAR(255),
+                CONSTRAINT Frecuencia_Alimentos_pk PRIMARY KEY (id_Alimentos)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-04_11:00" author="zatdiel">
+        <sql>
+            CREATE TABLE FrecuenciaOpciones (
+                id_Frecuencia INT AUTO_INCREMENT NOT NULL,
+                Nombre_frecuencia VARCHAR(255),
+                CONSTRAINT FrecuenciaOpciones_pk PRIMARY KEY (id_Frecuencia)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-05_09:30" author="carlos alberto">
+        <sql>
+            CREATE TABLE Citas (
+                id_Cita INT AUTO_INCREMENT NOT NULL,
+                idPaciente INT NOT NULL,
+                Fecha DATETIME,
+                tipo_Cita VARCHAR(255),
+                notas VARCHAR(255),
+                Estatus BOOLEAN,
+                CONSTRAINT Citas_pk PRIMARY KEY (id_Cita),
+                CONSTRAINT Citas_Pacientes_fk FOREIGN KEY (idPaciente) REFERENCES Pacientes(idPaciente)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-06_15:00" author="raul">
+        <sql>
+            CREATE TABLE Pago (
+                id_Pago INT AUTO_INCREMENT NOT NULL,
+                MontoTotal FLOAT,
+                anticipo INT,
+                FechaPago DATETIME,
+                idCita INT NOT NULL,
+                Estatus BOOLEAN,
+                CONSTRAINT Pago_pk PRIMARY KEY (id_Pago),
+                CONSTRAINT Pago_Citas_fk FOREIGN KEY (idCita) REFERENCES Citas(id_Cita)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-07_10:00" author="zatdiel">
+        <sql>
+            CREATE TABLE HistorialClinico (
+                id_Historial INT AUTO_INCREMENT NOT NULL,
+                idPaciente INT NOT NULL,
+                FechaCreacion DATE,
+                Nombre_Medico VARCHAR(255),
+                MotivoConsulta VARCHAR(255),
+                Fecha_inicio DATE,
+                TipoSintoma VARCHAR(50),
+                PresentacionDurante VARCHAR(50),
+                Duracion VARCHAR(50),
+                tiempoAproximado VARCHAR(255),
+                Cambios_tiempo VARCHAR(255),
+                ApareceCuando VARCHAR(255),
+                Ocupacion VARCHAR(255),
+                Antecedentes VARCHAR(255),
+                animalesEncasa BOOLEAN,
+                VisitaAnimales BOOLEAN,
+                Picadura BOOLEAN,
+                reaccion BOOLEAN,
+                ExplicacionPicadura VARCHAR(255),
+                Plantas_Medicinales VARCHAR(255),
+                Comentarios VARCHAR(255),
+                TratamientosRecibidos VARCHAR(255),
+                Estatus BOOLEAN,
+                CONSTRAINT HistorialClinico_pk PRIMARY KEY (IdHistorial_Clinico),
+                CONSTRAINT Historial_Pacientes_fk FOREIGN KEY (idPaciente) REFERENCES Pacientes(idPaciente)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-08_12:30" author="carlos alberto">
+        <sql>
+            CREATE TABLE ResultadoAlergenos (
+                idResultado INT AUTO_INCREMENT NOT NULL,
+                id_Historial INT NOT NULL,
+                idAlergenos INT NOT NULL,
+                CONSTRAINT ResultadoAlergenos_pk PRIMARY KEY (idResultado),
+                CONSTRAINT ResAlergenos_Historial_fk FOREIGN KEY (idHistorialPaciente) REFERENCES HistorialClinico(IdHistorial_Clinico),
+                CONSTRAINT ResAlergenos_Catalogo_fk FOREIGN KEY (idAlergenos) REFERENCES Catalogo_Alergenos(idAlergeno)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-09_09:00" author="raul">
+        <sql>
+            CREATE TABLE HistorialVacunas (
+                id_Vacunas INT AUTO_INCREMENT NOT NULL,
+                id_Historial INT NOT NULL,
+                id_cita INT NOT NULL,
+                id_Antigeno INT NOT NULL,
+                Score_valor INT,
+                Estatus BOOLEAN,
+                CONSTRAINT HistorialVacunas_pk PRIMARY KEY (id_Vacunas),
+                CONSTRAINT Vacunas_Historial_fk FOREIGN KEY (id_Historial) REFERENCES HistorialClinico(IdHistorial_Clinico),
+                CONSTRAINT Vacunas_Citas_fk FOREIGN KEY (id_cita) REFERENCES Citas(id_Cita),
+                CONSTRAINT Vacunas_Antigeno_fk FOREIGN KEY (id_Antigeno) REFERENCES Antigenos_Catalogo(id_Antigeno)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2025-11-09_10:00" author="zatdiel">
+        <sql>
+            CREATE TABLE FrecuenciaAlimentos (
+                idRespuesta INT AUTO_INCREMENT NOT NULL,
+                id_Alimento INT NOT NULL,
+                id_Opcion INT NOT NULL,
+                id_Historial INT NOT NULL,
+                CONSTRAINT FrecuenciaAlimentos_pk PRIMARY KEY (idRespuesta),
+                CONSTRAINT FrecAlim_Alimento_fk FOREIGN KEY (id_Alimento) REFERENCES Frecuencia_Alimentos(id_Alimentos),
+                CONSTRAINT FrecAlim_Opcion_fk FOREIGN KEY (id_Opcion) REFERENCES FrecuenciaOpciones(id_Frecuencia),
+                CONSTRAINT FrecAlim_Historial_fk FOREIGN KEY (id_Historial) REFERENCES HistorialClinico(IdHistorial_Clinico)
+            );
+        </sql>
+    </changeSet>
 </databaseChangeLog>
