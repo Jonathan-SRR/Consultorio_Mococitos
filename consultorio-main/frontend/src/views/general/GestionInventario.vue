@@ -120,20 +120,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import api from '@/plugins/api';
 
 // Estado
-const products = ref([
-  {
-    id: "",
-    nombre: "Gato",
-    fechaCaducidad: "2025-12-31",
-    categoria: "C001",
-    cantidad: 5,
-    lote: "L06730",
-    permiso: "SSA 9067"
-  }
-]);
+const products = ref<any[]>([]);
 
 const showModal = ref(false);
 const modalTitle = ref('Agregar Antígeno');
@@ -148,6 +139,48 @@ const formData = ref({
   cantidad: 0,
   lote: '',
   permiso: ''
+});
+
+const fetchProducts = async () => {
+  try {
+    const res = await api.get('/api/antigenos');
+    const raw: any[] = res.data || [];
+
+    products.value = raw.map(r => ({
+      id: r.id,
+      nombre: r.nombre_antigeno ?? r.nombre ?? '',
+      fechaCaducidad: r.fecha_caducidad
+          ? (typeof r.fecha_caducidad === 'string'
+              ? r.fecha_caducidad
+              : r.fecha_caducidad.toString())
+          : '',
+      categoria: r.categoria ?? '',
+      cantidad: r.cantidad ?? r.cantidad_ml ?? 0,
+      lote: r.lote ?? '',
+      permiso: r.permiso ?? ''
+    }));
+
+    // Proximos a caducar
+    const hoy = new Date();
+    const limite = new Date();
+    limite.setMonth(hoy.getMonth() + 3); // dentro de 3 meses
+
+    const proximos = products.value.filter(p => {
+      const fecha = new Date(p.fechaCaducidad);
+      return fecha >= hoy && fecha <= limite;
+    });
+
+    if (proximos.length > 0) {
+      const nombres = proximos.map(p => `• ${p.nombre} (caduca: ${p.fechaCaducidad})`).join('\n');
+      alert(` Los siguientes antígenos están próximos a caducar:\n\n${nombres}`);
+    }
+  } catch (e) {
+    console.error('Error cargando antígenos:', e);
+  }
+};
+
+onMounted(() => {
+  fetchProducts();
 });
 
 // Funciones
@@ -176,36 +209,64 @@ const cerrarModal = () => {
   showModal.value = false;
 };
 
-const guardarProducto = () => {
-  if (isEditing.value) {
-    // Editar producto existente
-    const index = products.value.findIndex(p => p.id === formData.value.id);
-    if (index !== -1) {
-      products.value[index] = { ...formData.value };
-      alert('Producto modificado correctamente.');
-    }
-  } else {
-    // Agregar nuevo producto
-    if (products.value.find(p => p.id === formData.value.id)) {
-      alert('Error: Ya existe un producto con ese ID.');
-      return;
-    }
-    products.value.push({ ...formData.value });
-    alert('Producto agregado correctamente.');
+const guardarProducto = async () => {
+
+  const nombreExistente = products.value.some(p =>
+      p.nombre.trim().toLowerCase() === formData.value.nombre.trim().toLowerCase() &&
+      (!isEditing.value || p.id !== formData.value.id)
+  );
+
+  if (nombreExistente) {
+    alert('Ya existe un antígeno con ese nombre.');
+    return;
   }
-  cerrarModal();
+
+  try {
+    const dataToSend = {
+      id: formData.value.id,
+      nombre_antigeno: formData.value.nombre,
+      fecha_caducidad: formData.value.fechaCaducidad,
+      categoria: formData.value.categoria,
+      cantidad: formData.value.cantidad,
+      lote: formData.value.lote,
+      permiso: formData.value.permiso
+    };
+
+    if (isEditing.value) {
+      await api.put(`/api/antigenos/${formData.value.id}`, dataToSend);
+      alert('Antígeno actualizado correctamente.');
+    } else {
+      await api.post('/api/antigenos', dataToSend);
+      alert('Antígeno agregado correctamente.');
+    }
+
+    cerrarModal();
+    await fetchProducts();
+  } catch (e) {
+    console.error('Error guardando antígeno:', e);
+    alert('Ocurrió un error al guardar el antígeno.');
+  }
 };
+
+
 
 const editarProducto = (product: any) => {
   abrirModal('edit', product);
 };
 
-const eliminarProducto = (id: string) => {
-  if (confirm('¿Está seguro que desea eliminar este producto?')) {
-    products.value = products.value.filter(p => p.id !== id);
-    alert('Producto eliminado correctamente.');
+const eliminarProducto = async (id: string) => {
+  if (confirm('¿Está seguro que desea eliminar este antígeno?')) {
+    try {
+      await api.delete(`/api/antigenos/${id}`);
+      alert('Antígeno eliminado correctamente.');
+      await fetchProducts();
+    } catch (e) {
+      console.error('Error eliminando antígeno:', e);
+      alert('Error al eliminar el antígeno.');
+    }
   }
 };
+
 
 const pedirReposicion = () => {
   if (selectedProducts.value.length === 0) {
@@ -221,6 +282,10 @@ const pedirReposicion = () => {
   alert(`Solicitud enviada al laboratorio para reposición de:\n\n${lista.join('\n')}`);
   selectedProducts.value = [];
 };
+
+
+
+
 </script>
 
 <style scoped>

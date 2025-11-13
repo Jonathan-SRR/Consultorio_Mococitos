@@ -170,8 +170,13 @@ public class WebSecurityConfiguration {
 
         private UsernamePasswordAuthenticationToken getAuthentication(String jwt) {
              if (jwt != null) {
+                 // Importante: pasar la clave pública para poder validar la firma al parsear
                  Jws<Claims> parseClaimsJws = Jwts.parser()
-                        .build().parseClaimsJws(jwt);
+                         .setSigningKey( cipherData.getPublicKey() )
+                         .build().parseClaimsJws(jwt);
+                 //ORIGINAL
+                 //Jws<Claims> parseClaimsJws = Jwts.parser()
+                 // .build().parseClaimsJws(jwt);
                  if( SignatureAlgorithm.forName(parseClaimsJws.getHeader().getAlgorithm()) != cipherData.getSignatureAlgorithm() ){
                     throw new RuntimeException("Token Corrupto");
                 }
