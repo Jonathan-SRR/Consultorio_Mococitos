@@ -2,7 +2,7 @@ package com.desarrollo.configurations;
 
 import com.desarrollo.entities.administracion.Usuario;
 import com.desarrollo.repositories.administracion.UsuarioRepository;
-import com.desarrollo.types.UsuarioType;
+import com.desarrollo.types.administracion.UsuarioType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jdi.InternalException;
 import io.jsonwebtoken.*;
