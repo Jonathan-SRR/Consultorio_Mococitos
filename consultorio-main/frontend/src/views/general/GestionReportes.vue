@@ -23,7 +23,7 @@
 
       <!-- Botón principal -->
       <div class="actions">
-        <button class="btn-export" @click="exportarPDF">
+        <button class="btn-export" @click="noImplementado">
           Exportar a PDF
         </button>
       </div>
@@ -34,7 +34,6 @@
 <script setup>
 import { ref } from "vue";
 import { securityStore } from "@/addons/store/general/security";
-import html2pdf from "html2pdf.js";
 
 const editor = ref(null);
 const security = securityStore();
@@ -47,19 +46,9 @@ const formatDoc = (command, value = null) => {
   document.execCommand(command, false, value);
 };
 
-const exportarPDF = () => {
-  const element = editor.value; // referencia al contenido editable
-  const options = {
-    margin:       10,
-    filename:     'reporte.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(options).from(element).save();
+const noImplementado = () => {
+  alert("La funcionalidad de exportar a PDF aún no está implementada.");
 };
-
 </script>
 
 <style scoped>

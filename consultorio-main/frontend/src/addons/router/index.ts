@@ -60,7 +60,7 @@ index.beforeEach(async (to, _from, next) => {
     if (to.meta.guest) {
         next();
     } else {
-        await securityStore().verifyJwt();
+        //await securityStore().verifyJwt();
         next();
     }
 });
