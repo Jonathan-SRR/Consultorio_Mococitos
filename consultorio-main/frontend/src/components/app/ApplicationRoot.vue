@@ -100,7 +100,8 @@ watch(
         '/inventario': 'Gestión de Inventario',
         '/administrar-paciente': 'Administrar Pacientes',
         '/reportes': 'Editor de Documentos ',
-        '/pruebas-alergias': 'Pruebas de Alergias'
+        '/pruebas-alergias': 'Pruebas de Alergias',
+        '/agregar-paciente': 'Agregar Paciente'
       };
       pageTitle.value = titles[newPath] || 'Dashboard';
 

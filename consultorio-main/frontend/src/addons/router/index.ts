@@ -42,7 +42,12 @@ let index = createRouter({
                     path: "/pruebas-alergias",
                     name: "PruebasAlergias",
                     component: () => import("@/views/general/PruebasAlergias.vue")
-                }
+                },
+                {
+                    path: "/agregar-paciente",
+                    name: "AgregarPaciente",
+                    component: () => import("@/views/general/AgregarPaciente.vue")
+                },
             ]
         }
     ],
