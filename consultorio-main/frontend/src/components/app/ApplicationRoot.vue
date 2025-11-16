@@ -101,7 +101,11 @@ watch(
         '/administrar-paciente': 'Administrar Pacientes',
         '/reportes': 'Editor de Documentos ',
         '/pruebas-alergias': 'Pruebas de Alergias',
-        '/agregar-paciente': 'Agregar Paciente'
+        '/agregar-paciente': 'Agregar Paciente',
+        '/historial-clinico': 'Gestión de Historial Clínico',
+        '/vacunas': 'Registro de Pruebas y Tratamiento',
+        '/seguimiento': 'Seguimiento de Tratamiento',
+
       };
       pageTitle.value = titles[newPath] || 'Dashboard';
 

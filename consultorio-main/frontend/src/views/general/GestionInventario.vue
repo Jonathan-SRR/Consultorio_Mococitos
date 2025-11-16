@@ -51,7 +51,7 @@
         <button id="btn-add" class="btn btn-primary" @click="abrirModal('add')">
           <i class="fas fa-plus"></i> Agregar
         </button>
-        <button id="btn-request" class="btn btn-secondary" @click="pedirReposicion">
+        <button id="btn-request" class="btn btn-primary" @click="pedirReposicion">
           <i class="fas fa-truck"></i> Pedir Reposición
         </button>
       </div>
