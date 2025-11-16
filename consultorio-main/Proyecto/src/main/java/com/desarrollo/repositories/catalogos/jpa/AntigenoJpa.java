@@ -19,9 +19,6 @@ public interface AntigenoJpa extends DesarrolloJpa<Antigeno, Integer> {
 
     List<Antigeno> findByLote(String lote);
 
-    @Query("SELECT a FROM Antigeno a WHERE a.fechaCaducidad < CURRENT_DATE")
-    List<Antigeno> findCaducados();
-
     Optional<Antigeno> findByNombreAntigeno(String nombreAntigeno);
 
 }
