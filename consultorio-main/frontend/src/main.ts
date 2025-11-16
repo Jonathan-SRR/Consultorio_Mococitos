@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import './calendar-styles.css'
 import './style_gestion_de_pago.css'
 import './style_agregar_paciente.css'
+//import './styleSDT.css'
 import './style.css'
 
 
