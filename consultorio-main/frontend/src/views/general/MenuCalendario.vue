@@ -73,9 +73,9 @@
             <textarea v-model="formData.notas" rows="3"></textarea>
           </div>
           <div class="form-buttons">
-            <button type="submit" id="guardarCita">Guardar Cita</button>
-            <button type="button" id="cancelarCita" @click="closeCitaModal">
-              Cancelar
+            <button type="submit" class="btn-primary" id="guardarCita"><i class="fas fa-save"></i> Guardar Cita</button>
+            <button type="button" class="btn-danger" id="cancelarCita" @click="closeCitaModal">
+              <i class="fas fa-times"></i> Cancelar
             </button>
           </div>
         </form>

@@ -186,7 +186,7 @@ export default {
 }
 .btn-pruebas {
   background-color: #fcac17;
-  color: #212529;
+  color: white;
 }
 .btn-pruebas:hover {
   background-color: #e0a800;

@@ -69,7 +69,7 @@
 
 .btn-danger {
     background-color: var(--accent-color); /* Usa accent-color como danger-color */
-    color: rgb(173, 41, 41); /* Color de texto específico, diferente al blanco */
+    color: white; /* Color de texto específico, diferente al blanco */
 }
 /* --- Fin Botones --- */
 
