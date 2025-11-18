@@ -88,7 +88,7 @@
       <div class="btn-group">
         <button class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
         <button class="btn btn-warning"><i class="fas fa-edit"></i> Editar</button>
-        <button class="btn btn-secondary" @click="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        <button class="btn btn-secondary"><i class="fas fa-print"></i> Imprimir</button>
         <button class="btn btn-danger" @click="volverAdministrar"><i class="fas fa-times"></i> Cancelar</button>
       </div>
     </div>

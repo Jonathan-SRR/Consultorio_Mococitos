@@ -102,9 +102,9 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+//import { useRouter } from 'vue-router';
 
-const router = useRouter();
+//const router = useRouter();
 
 const verHistorial = () => {
   // Redirigir a la vista de historial de vacunación cuando exista
