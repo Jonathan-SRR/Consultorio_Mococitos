@@ -288,4 +288,35 @@
             );
         </sql>
     </changeSet>
+
+    <!-- TABLA: ESQUEMA TRATAMIENTO -->
+
+    <changeSet id="2025-11-15_19:00" author="raul">
+        <sql>
+            CREATE TABLE EsquemaTratamiento (
+            idEsquema           INT PRIMARY KEY AUTO_INCREMENT,
+            semana              VARCHAR(10) NOT NULL,
+            dosis               DECIMAL(4, 2) NOT NULL,
+            descripcion         VARCHAR(255)
+            );
+        </sql>
+    </changeSet>
+
+    <!-- TABLA: RESULTADO TRATAMIENTO -->
+
+    <changeSet id="2025-11-15_19:15" author="raul">
+        <sql>
+            CREATE TABLE ResultadoTratamiento (
+            idRegistro          INT PRIMARY KEY AUTO_INCREMENT,
+            idHistorialClinico  INT NOT NULL,
+            idEsquema           INT NOT NULL,
+            fechaLogDomingo     DATE,
+            fechaLogJueves      DATE,
+            observaciones       TEXT,
+            FOREIGN KEY (idHistorialClinico) REFERENCES HistorialClinico(idHistorialClinico),
+            FOREIGN KEY (idEsquema) REFERENCES EsquemaTratamiento(idEsquema)
+            );
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
