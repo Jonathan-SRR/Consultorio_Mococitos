@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
+@Table(name = "tutor")
 public class Tutor implements Serializable {
 
     @Id
@@ -18,17 +19,14 @@ public class Tutor implements Serializable {
     private String telefono;
     private Boolean estatus;
 
-    @ManyToOne
-    @JoinColumn(name = "idPaciente")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idPaciente", nullable = false)
     private Pacientes paciente;
 
-
     public Integer getIdTutor(){return idTutor;}
-
     public void setIdTutor(Integer idTutor) { this.idTutor = idTutor;}
 
     public String getNombreTutor() { return nombreTutor; }
-
     public void setNombreTutor(String nombreTutor) { this.nombreTutor = nombreTutor; }
 
     public String getApellidoPaterno() { return apellidoPaterno; }
@@ -60,4 +58,17 @@ public class Tutor implements Serializable {
     @Override
     public int hashCode() { return Objects.hash( getIdTutor() );}
 
+    @Override
+    public String toString() {
+        return "Tutor{" +
+                "idTutor=" + idTutor +
+                ", nombreTutor='" + nombreTutor + '\'' +
+                ", apellidoPaterno='" + apellidoPaterno + '\'' +
+                ", apellidoMaterno='" + apellidoMaterno + '\'' +
+                ", correo='" + correo + '\'' +
+                ", telefono='" + telefono + '\'' +
+                ", estatus=" + estatus +
+                ", paciente=" + (paciente != null ? paciente.getIdPaciente() : "NULL") +
+                '}';
     }
+}

@@ -1,12 +1,25 @@
 package com.desarrollo.repositories.paciente.jpa;
 
 import com.desarrollo.entities.pacientes.Tutor;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.desarrollo.repositories.DesarrolloJpa;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface TutorJpa extends JpaRepository<Tutor, Integer> {
+public interface TutorJpa extends DesarrolloJpa<Tutor, Integer> {
 
-    List<Tutor> findByPaciente_IdPaciente(Integer idPaciente);
+    List<Tutor> findByNombreTutorContaining(String nombre);
+
+    Optional<Tutor> findByCorreo(String correo);
+
+    List<Tutor> findByTelefono(String telefono);
+
+    List<Tutor> findByPacienteIdPaciente(Integer idPaciente);
+
+    @Query("SELECT t FROM Tutor t WHERE t.nombreTutor LIKE %:nombre% OR t.apellidoPaterno LIKE %:apellido%")
+    List<Tutor> findByNombreOrApellido(@Param("nombre") String nombre, @Param("apellido") String apellido);
+
+    List<Tutor> findByEstatus(Boolean estatus);
 }
-

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
+@Table(name = "direccion") // Asegurar que el nombre de la tabla sea correcto
 public class Direccion implements Serializable {
 
     @Id
@@ -18,8 +19,8 @@ public class Direccion implements Serializable {
     private Integer codigoPostal;
     private Boolean estatus;
 
-    @ManyToOne
-    @JoinColumn(name = "idTutor")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idTutor", nullable = false) // Asegurar que el nombre de la columna sea correcto
     private Tutor tutor;
 
     public Integer getIdDireccion() { return idDireccion; }
@@ -46,7 +47,6 @@ public class Direccion implements Serializable {
     public Tutor getTutor() { return tutor; }
     public void setTutor(Tutor tutor) { this.tutor = tutor; }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -57,5 +57,18 @@ public class Direccion implements Serializable {
 
     @Override
     public int hashCode() { return Objects.hash(idDireccion);}
-}
 
+    @Override
+    public String toString() {
+        return "Direccion{" +
+                "idDireccion=" + idDireccion +
+                ", calle='" + calle + '\'' +
+                ", numeroExt=" + numeroExt +
+                ", colonia='" + colonia + '\'' +
+                ", estado='" + estado + '\'' +
+                ", codigoPostal=" + codigoPostal +
+                ", estatus=" + estatus +
+                ", tutor=" + (tutor != null ? tutor.getIdTutor() : "NULL") +
+                '}';
+    }
+}

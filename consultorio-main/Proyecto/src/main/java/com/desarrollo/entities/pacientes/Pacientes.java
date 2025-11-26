@@ -3,6 +3,8 @@ package com.desarrollo.entities.pacientes;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -17,6 +19,9 @@ public class Pacientes implements Serializable {
     private LocalDate fechaNacimiento;
     private String sexo;
     private Boolean estatus;
+
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Tutor> tutores = new ArrayList<>();
 
     public Integer getIdPaciente() { return idPaciente; }
     public void setIdPaciente(Integer idPaciente) { this.idPaciente = idPaciente; }

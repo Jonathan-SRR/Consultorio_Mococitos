@@ -54,6 +54,12 @@
               </button>
             </td>
           </tr>
+          <tr v-if="!loading && pacientesFiltrados.length === 0">
+            <td colspan="7" style="text-align:center; padding:18px;">No se encontraron pacientes</td>
+          </tr>
+          <tr v-if="loading">
+            <td colspan="7" style="text-align:center; padding:18px;">Cargando...</td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -68,8 +74,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import api from '@/plugins/api';
 
 const router = useRouter();
 
@@ -78,74 +85,97 @@ const busqueda = ref({
   nombre: ''
 });
 
-const pacientes = ref([
-  {
-    id: '001',
-    nombre: 'Juan',
-    apellidoPaterno: 'Pérez',
-    apellidoMaterno: 'López',
-    fechaNacimiento: '2005-03-12',
-    sexo: 'M'
-  },
-  {
-    id: '002',
-    nombre: 'María',
-    apellidoPaterno: 'Gómez',
-    apellidoMaterno: 'Ramírez',
-    fechaNacimiento: '2010-07-22',
-    sexo: 'F'
-  },
-  {
-    id: '003',
-    nombre: 'Carlos',
-    apellidoPaterno: 'Martínez',
-    apellidoMaterno: 'Fernández',
-    fechaNacimiento: '2008-11-05',
-    sexo: 'M'
-  }
-]);
+const pacientes = ref<Array<any>>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-// Computed - Filtrado de pacientes
+// Cargar pacientes desde backend
+const cargarPacientes = async (query = '') => {
+  loading.value = true;
+  error.value = null;
+  try {
+    let resp;
+    if (query && query.trim().length > 0) {
+      // Usar endpoint de búsqueda
+      resp = await api.get('/api/pacientes/buscar', {
+        params: { nombre: query }
+      });
+    } else {
+      // Cargar todos los pacientes
+      resp = await api.get('/api/pacientes');
+    }
+
+    pacientes.value = (resp.data || []).map((p: any) => ({
+      id: p.id_paciente ?? p.id,
+      nombre: p.nombre_paciente ?? p.nombre,
+      apellidoPaterno: p.apellido_paterno ?? p.apellidoPaterno,
+      apellidoMaterno: p.apellido_materno ?? p.apellidoMaterno,
+      fechaNacimiento: formatDateShort(p.fecha_nacimiento ?? p.fechaNacimiento),
+      sexo: p.sexo,
+      raw: p
+    }));
+  } catch (err: any) {
+    console.error('Error cargando pacientes', err);
+    error.value = err?.response?.data?.message || 'Error al cargar pacientes';
+    pacientes.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Formatear fecha ISO (YYYY-MM-DD) -> YYYY-MM-DD (o vacío)
+const formatDateShort = (d: any) => {
+  if (!d) return '';
+  try {
+    const s = String(d);
+    if (s.length >= 10) return s.substr(0, 10);
+    return s;
+  } catch {
+    return '';
+  }
+};
+
+// Computed - Filtrado local
 const pacientesFiltrados = computed(() => {
   if (!busqueda.value.nombre.trim()) {
     return pacientes.value;
   }
-
   const nombreBusqueda = busqueda.value.nombre.trim().toLowerCase();
-
   return pacientes.value.filter(paciente => {
     const nombreCompleto = `${paciente.nombre} ${paciente.apellidoPaterno} ${paciente.apellidoMaterno}`.toLowerCase();
     return nombreCompleto.includes(nombreBusqueda);
   });
 });
 
-// Funciones
-const buscarPacientes = () => {
-  // El filtrado es automático gracias al computed
-  // Esta función puede hacer una petición al backend si es necesario
-  console.log('Buscando:', busqueda.value.nombre);
+// Buscar (llama al backend con parámetro nombre)
+const buscarPacientes = async () => {
+  await cargarPacientes(busqueda.value.nombre);
 };
 
-const limpiarBusqueda = () => {
+// Limpiar
+const limpiarBusqueda = async () => {
   busqueda.value.nombre = '';
+  await cargarPacientes();
 };
 
 const administrarPaciente = (paciente: any) => {
-  // Navegar a la vista de administrar paciente con el ID
+  // Enviar id en params y el objeto raw (si está disponible) en el estado de navegación
   router.push({
     name: 'AdministrarPaciente',
-    params: { id: paciente.id },
-    query: {
-      nombre: paciente.nombre,
-      apellidoPaterno: paciente.apellidoPaterno,
-      apellidoMaterno: paciente.apellidoMaterno
-    }
+    params: { id: String(paciente.id) },
+    state: { paciente: paciente.raw ?? paciente }
   });
 };
 
+// Nuevo paciente
 const nuevoPaciente = () => {
   router.push({ name: 'AgregarPaciente' });
 };
+
+// Cargar inicialmente todos los pacientes
+onMounted(() => {
+  cargarPacientes();
+});
 </script>
 
 <style scoped>

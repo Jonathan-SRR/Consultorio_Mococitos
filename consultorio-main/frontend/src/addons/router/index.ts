@@ -36,7 +36,7 @@ let index = createRouter({
                 { path: "/inventario", name: "Inventario", component: () => import("@/views/general/GestionInventario.vue") },
                 { path: "/pacientes", name: "Pacientes", component: () => import("@/views/general/MenuPacientes.vue") },
                 { path: "/pagos", name: "Pagos", component: () => import("@/views/general/GestionPagos.vue") },
-                { path: "/administrar-paciente", name: "AdministrarPaciente", component: () => import("@/views/general/AdministrarPaciente.vue") },
+                { path: "/administrar-paciente/:id?", name: "AdministrarPaciente", component: () => import("@/views/general/AdministrarPaciente.vue") },
                 { path: "/reportes", name: "GestionReportes", component: () => import("@/views/general/GestionReportes.vue") },
                 {
                     path: "/pruebas-alergias",

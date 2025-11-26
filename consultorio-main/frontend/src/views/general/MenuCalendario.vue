@@ -19,7 +19,7 @@
 
     <!-- Calendario -->
     <div id="calendar-container">
-      <FullCalendar :options="calendarOptions" />
+      <FullCalendar ref="calendarRef" :options="calendarOptions" />
     </div>
 
     <!-- ---------------------- MODAL AGREGAR / EDITAR ---------------------- -->
@@ -53,7 +53,7 @@
               <i class="fas fa-exclamation-circle"></i> Paciente no encontrado.
             </div>
             <div v-if="pacienteValido" class="validation-message success">
-              <i class="fas fa-check-circle"></i> Paciente válido.
+              <i class="fas fa-check-circle"></i> Paciente válido: {{ pacienteBuscadoNombre || formData.paciente }}
             </div>
           </div>
           <div class="form-group">
@@ -117,7 +117,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import api from '@/plugins/api';
+import { fetchPacienteWithTutor } from '@/plugins/pacienteService';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -125,7 +126,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 
 const router = useRouter();
-const API_BASE_URL = 'http://localhost:8100';
 
 // Estados
 const showCitaModal = ref(false);
@@ -155,8 +155,17 @@ const citaActual = ref({
   estatus: ''
 });
 
+const pacienteBuscadoNombre = computed(() => {
+  const p = pacienteBuscado.value;
+  if (!p) return '';
+  const nombre = p.nombre ?? p.nombre_paciente ?? '';
+  const apellido = p.apellidoPaterno ?? p.apellido_paterno ?? '';
+  return (nombre + ' ' + apellido).trim();
+});
+
 // Calendario
 const eventos = ref<any[]>([]);
+const calendarRef = ref<any | null>(null);
 const calendarOptions = ref({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
@@ -169,7 +178,34 @@ const calendarOptions = ref({
   },
   selectable: true,
   editable: true,
-  events: eventos.value,
+  // Let FullCalendar call the backend to fetch events when needed.
+  events: (_fetchInfo: any, successCallback: any, failureCallback: any) => {
+    api.get(`/api/citas/calendar`)
+      .then(res => {
+        const datos = res.data;
+        const eventosFormateados = datos.map((cita: any) => {
+          let fechaISO = cita.fecha;
+          if (fechaISO.includes(' ')) fechaISO = fechaISO.replace(' ', 'T');
+          const startDate = new Date(fechaISO);
+          return {
+            id: String(cita.idCita),
+            title: `Paciente ${cita.idPaciente} - ${cita.tipoCita}`,
+            start: startDate,
+            extendedProps: {
+              paciente: cita.idPaciente,
+              tipo: cita.tipoCita,
+              notas: cita.notas,
+              estatus: cita.estatus
+            }
+          };
+        });
+        successCallback(eventosFormateados);
+      })
+      .catch(err => {
+        console.error('Error fetching calendar events:', err);
+        failureCallback(err);
+      });
+  },
   dateClick: (info: any) => {
     modalTitle.value = 'Agendar Nueva Cita';
     formData.value = {
@@ -205,11 +241,17 @@ const citasDeHoy = computed(() => {
   const mm = String(hoy.getMonth() + 1).padStart(2, '0');
   const dd = String(hoy.getDate()).padStart(2, '0');
   const hoyString = `${yyyy}-${mm}-${dd}`;
-
   return eventos.value
-      .filter(ev => ev.start.toString().split('T')[0] === hoyString)
+      .filter(ev => {
+        const start = ev.start instanceof Date ? ev.start : new Date(ev.start);
+        const y = start.getFullYear();
+        const m = String(start.getMonth() + 1).padStart(2, '0');
+        const d = String(start.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${d}`;
+        return dateStr === hoyString;
+      })
       .map(ev => {
-        const fechaObj = new Date(ev.start);
+        const fechaObj = ev.start instanceof Date ? ev.start : new Date(ev.start);
         return {
           id: ev.id,
           hora: fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
@@ -233,16 +275,17 @@ function resetValidacion() {
 // Cargar eventos
 async function cargarEventos() {
   try {
-    const res = await axios.get(`${API_BASE_URL}/api/citas/calendar`);
+    const res = await api.get(`/api/citas/calendar`);
     const datos = res.data;
 
     const eventosFormateados = datos.map((cita: any) => {
       let fechaISO = cita.fecha;
       if (fechaISO.includes(' ')) fechaISO = fechaISO.replace(' ', 'T');
+      const startDate = new Date(fechaISO);
       return {
         id: String(cita.idCita),
         title: `Paciente ${cita.idPaciente} - ${cita.tipoCita}`,
-        start: fechaISO,
+        start: startDate,
         extendedProps: {
           paciente: cita.idPaciente,
           tipo: cita.tipoCita,
@@ -261,49 +304,78 @@ async function cargarEventos() {
 
 // Validar paciente
 let timeoutId: any = null;
+const pacienteBuscado = ref<any | null>(null);
 async function validarPaciente() {
   const paciente = formData.value.paciente.trim();
   resetValidacion();
   if (!paciente) return;
+
+  // Only numeric ID is allowed
+  if (!/^[0-9]+$/.test(paciente)) {
+    pacienteInvalido.value = true;
+    return;
+  }
 
   validandoPaciente.value = true;
   if (timeoutId) clearTimeout(timeoutId);
 
   timeoutId = setTimeout(async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/pacientes/existe?nombre=${encodeURIComponent(paciente)}`);
+      const idNumber = Number(paciente);
+      const res = await fetchPacienteWithTutor(idNumber);
+      const p = res?.paciente ?? null;
       validandoPaciente.value = false;
-      if (res.data.existe) pacienteValido.value = true;
-      else pacienteInvalido.value = true;
-    } catch { validandoPaciente.value = false; }
+      if (p && p.id) {
+        pacienteBuscado.value = p;
+        pacienteValido.value = true;
+      } else {
+        pacienteInvalido.value = true;
+      }
+    } catch (e) {
+      pacienteBuscado.value = null;
+      pacienteInvalido.value = true;
+      validandoPaciente.value = false;
+    }
   }, 500);
 }
 
-// Guardar / actualizar cita
+// Convierte DD/MM/YYYY → YYYY-MM-DD
+function convertirFecha(fechaDDMMYYYY: string) {
+  if (!fechaDDMMYYYY.includes('/')) return fechaDDMMYYYY; // ya viene en formato ISO
+  const [dia, mes, año] = fechaDDMMYYYY.split('/');
+  return `${año}-${mes}-${dia}`;
+}
+
 async function guardarCita() {
   if (!formData.value.paciente || !formData.value.fecha || !formData.value.hora || !formData.value.tipo) {
     alert('Complete los campos obligatorios');
     return;
   }
 
+  // Convertir fecha DD/MM/YYYY → YYYY-MM-DD
+  const fechaISO = convertirFecha(formData.value.fecha);
+
+  // *** UNIFICAR fecha + hora → LocalDateTime ***
+  const fechaCompleta = `${fechaISO}T${formData.value.hora}:00`;
+
   const datosCita = {
-    idCita: formData.value.id,
-    idPaciente: formData.value.paciente,
-    fecha: formData.value.fecha,
-    hora: formData.value.hora,
-    tipoCita: formData.value.tipo,
+    id: formData.value.id ? Number(formData.value.id) : null,
+    paciente: { idPaciente: Number(formData.value.paciente) },
+    fecha: fechaCompleta,
+    tipo: formData.value.tipo,
     notas: formData.value.notas,
     estatus: 1
   };
 
   try {
     if (formData.value.id) {
-      await axios.put(`${API_BASE_URL}/api/citas/${formData.value.id}`, datosCita);
+      await api.put(`/api/citas/${formData.value.id}`, datosCita);
       alert('Cita actualizada exitosamente');
     } else {
-      await axios.post(`${API_BASE_URL}/api/citas`, datosCita);
+      await api.post(`/api/citas`, datosCita);
       alert('Cita guardada exitosamente');
     }
+
     await cargarEventos();
     closeCitaModal();
   } catch (error) {
@@ -312,12 +384,13 @@ async function guardarCita() {
   }
 }
 
+
 // Eliminar cita
 async function eliminarCita() {
   if (!currentEvent.value) return;
   if (!confirm('¿Seguro que desea eliminar esta cita?')) return;
   try {
-    await axios.delete(`${API_BASE_URL}/api/citas/${currentEvent.value.id}`);
+    await api.delete(`/api/citas/${currentEvent.value.id}`);
     await cargarEventos();
     closeInfoModal();
     alert('Cita eliminada');
@@ -344,7 +417,7 @@ function reagendarCita() {
 }
 
 // Funciones auxiliares
-function editarCita() { reagendarCita(); modalTitle.value = 'Modificar Cita'; }
+// Function removed: reemplazado por reagendarCita ya que no se usa directamente
 function comenzarCitaModal() { alert("Iniciando cita..."); }
 function iniciarCita(cita: any) { alert("Iniciando cita: " + cita.tipo); }
 function irAgregarPaciente() { router.push({ name: 'AgregarPaciente', query: { nombre: formData.value.paciente } }); }
@@ -369,3 +442,4 @@ input.invalid { border-color: #e74c3c; }
 .appointment-card { background: #f7f7f7; padding: 10px; border-radius: 5px; margin-bottom: 5px; display: flex; flex-direction: column; gap: 4px; }
 .appointment-time { font-weight: bold; }
 </style>
+

@@ -2,16 +2,31 @@ package com.desarrollo.repositories.paciente.jpa;
 
 import com.desarrollo.entities.pacientes.Pacientes;
 import com.desarrollo.repositories.DesarrolloJpa;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface PacienteJpa extends DesarrolloJpa<Pacientes, Integer> {
 
-    // Buscar por coincidencia parcial en nombre o apellidos
-    List<Pacientes> findByNombrePacienteContainingIgnoreCaseOrApellidoPaternoContainingIgnoreCaseOrApellidoMaternoContainingIgnoreCase(
-            String nombre_paciente, String apellido_paterno, String apellido_materno
-    );
+    List<Pacientes> findByNombrePacienteContaining(String nombre);
 
-    // Buscar por coincidencia con nombre completo
-    List<Pacientes> findByNombrePacienteContainingIgnoreCase(String nombre);
+    List<Pacientes> findByApellidoPaternoContaining(String apellidoPaterno);
 
+    List<Pacientes> findByApellidoMaternoContaining(String apellidoMaterno);
+
+    @Query("SELECT p FROM Pacientes p WHERE " +
+            "p.nombrePaciente LIKE %:nombre% OR " +
+            "p.apellidoPaterno LIKE %:apellidoPaterno% OR " +
+            "p.apellidoMaterno LIKE %:apellidoMaterno%")
+    List<Pacientes> findByNombrePacienteContainingOrApellidoPaternoContainingOrApellidoMaternoContaining(
+            @Param("nombre") String nombre,
+            @Param("apellidoPaterno") String apellidoPaterno,
+            @Param("apellidoMaterno") String apellidoMaterno);
+
+    Optional<Pacientes> findByNombrePacienteAndApellidoPaternoAndApellidoMaterno(
+            String nombrePaciente, String apellidoPaterno, String apellidoMaterno);
+
+    List<Pacientes> findByEstatus(Boolean estatus);
 }
