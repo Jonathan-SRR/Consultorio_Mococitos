@@ -2,7 +2,6 @@ package com.desarrollo.repositories.catalogos.jpa;
 
 import com.desarrollo.entities.catalogos.Antigeno;
 import com.desarrollo.repositories.DesarrolloJpa;
-import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
