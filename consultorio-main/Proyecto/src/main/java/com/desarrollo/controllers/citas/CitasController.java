@@ -37,6 +37,17 @@ public class CitasController {
         return citaService.guardar(cita);
     }
 
+    @PutMapping("/{id}")
+    public Citas actualizar(@PathVariable Integer id, @RequestBody Citas cita) {
+        // Ensure the entity contains the correct id for update
+        if (cita.getIdCita() == null) {
+            cita.setIdCita(id);
+        } else if (!cita.getIdCita().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id en path y body no coinciden");
+        }
+        return citaService.guardar(cita);
+    }
+
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Integer id) {
         citaService.eliminar(id);
@@ -57,6 +68,26 @@ public class CitasController {
     @GetMapping("/estatus/{estatus}")
     public List<Citas> obtenerPorEstatus(@PathVariable Integer estatus) {
         return citaService.obtenerPorEstatus(estatus);
+    }
+
+    @GetMapping("/calendar")
+    public java.util.List<java.util.Map<String, Object>> obtenerParaCalendar() {
+        var citas = citaService.obtenerTodas()
+                .stream()
+                .filter(c -> c.getEstatus() != null && c.getEstatus().equals(1))
+                .toList();
+        return citas.stream().map(c -> {
+            var paciente = c.getPaciente();
+            Integer idPaciente = (paciente != null) ? paciente.getIdPaciente() : null;
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("idCita", c.getIdCita());
+            m.put("idPaciente", idPaciente);
+            m.put("fecha", c.getFecha() != null ? c.getFecha().format(FORMATTER) : null);
+            m.put("tipoCita", c.getTipoCita());
+            m.put("notas", c.getNotas());
+            m.put("estatus", c.getEstatus());
+            return m;
+        }).toList();
     }
 
     @GetMapping("/hoy")

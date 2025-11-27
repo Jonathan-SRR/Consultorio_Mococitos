@@ -359,10 +359,10 @@ async function guardarCita() {
   const fechaCompleta = `${fechaISO}T${formData.value.hora}:00`;
 
   const datosCita = {
-    id: formData.value.id ? Number(formData.value.id) : null,
+    idCita: formData.value.id ? Number(formData.value.id) : null,
     paciente: { idPaciente: Number(formData.value.paciente) },
     fecha: fechaCompleta,
-    tipo: formData.value.tipo,
+    tipoCita: formData.value.tipo,
     notas: formData.value.notas,
     estatus: 1
   };
